@@ -13,6 +13,7 @@ public record ProductResponse (UUID id,
 
 ){
 
+
     public  static ProductResponse FromEntity(ProductEntity entity){
 
         return  new ProductResponse(
