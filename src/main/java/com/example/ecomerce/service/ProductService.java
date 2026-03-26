@@ -46,7 +46,7 @@ public class ProductService {
                 ));
    }
 
-   public ProductResponse updateProduct(UUID id, @Valid  ProductResponse request ) {
+   public ProductResponse updateProduct(@Valid  ProductResponse request ) {
 
       ProductEntity productEntity = productRepository.findById(id).orElseThrow(
               () -> new IllegalArgumentException("product not found")
@@ -68,7 +68,7 @@ public class ProductService {
 
    }
 
-   public ProductResponse deleteProduct(UUID id , @Valid  ProductResponse request ) {
+   public ProductResponse deleteProduct(UUID id ) {
         if(productRepository.existsById(id)){
             throw new RuntimeException("product not found");
         }
