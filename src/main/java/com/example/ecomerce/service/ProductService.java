@@ -48,7 +48,8 @@ public class ProductService {
 
    public ProductResponse updateProduct(@Valid  ProductResponse request ) {
 
-      ProductEntity productEntity = productRepository.findById(id).orElseThrow(
+       UUID id = null;
+       ProductEntity productEntity = productRepository.findById(id).orElseThrow(
               () -> new IllegalArgumentException("product not found")
       );
 
@@ -68,17 +69,10 @@ public class ProductService {
 
    }
 
-   public ProductResponse deleteProduct(UUID id ) {
-        if(productRepository.existsById(id)){
-            throw new RuntimeException("product not found");
-        }
+    public void deleteProduct(UUID id) {
+        var product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException(String.valueOf(id)));
 
-        productRepository.deleteById(id);
-        return new ProductResponse(
-                UUID.randomUUID(), request.name(),
-                request.description(),
-                request.category(),
-                request.price()
-        );
-   }
+        productRepository.delete(product);
+    }
 }
