@@ -54,7 +54,6 @@ public class ProductService {
         return ProductResponse.of(entity);
     }
 
-    // DELETE
     public void deleteProduct(UUID id) {
         if (!productRepository.existsById(id)) {
             throw new IllegalArgumentException("product not found");

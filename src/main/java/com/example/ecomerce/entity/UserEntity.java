@@ -50,6 +50,39 @@ public class UserEntity {
         this.state = state;
     }
 
+    public UserEntity() {
+
+    }
+
+    public UUID getId() {
+        return id;
+    }
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
     public String getEmail() {
         return email;
     }
