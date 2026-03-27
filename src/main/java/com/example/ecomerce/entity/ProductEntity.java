@@ -30,19 +30,14 @@ public class ProductEntity {
     @Column(nullable = false)
     private int quantity;
 
-    @Column(nullable = false)
-    private double unitPrice;
 
-    public ProductEntity(String name, String description, String category, double price, int quantity, double unitPrice) {
-
+    public ProductEntity(String name, String description, String category, double price, int quantity, double unitPrice)) {
         this.name = name;
         this.description = description;
         this.category = category;
         this.price = price;
-        this.quantity = quantity;}
-
-    public ProductEntity() {
-    }
+        this.quantity = quantity;
+}
     public UUID getId() {
         return id;
     }
