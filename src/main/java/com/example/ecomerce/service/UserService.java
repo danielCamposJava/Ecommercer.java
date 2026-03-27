@@ -32,12 +32,9 @@ public class UserService {
         UserEntity saved= userRepository.save(entity);
 
         return UserResponse.of(saved);
-
-
     }
 
-
-    public  List<UserResponse> getAllUser(@Valid UserRequest userRequest) {
+    public  List<UserResponse> getAllUser() {
         return  userRepository.
                 findAll().
                 stream().
