@@ -1,5 +1,6 @@
 package com.example.ecomerce.service;
 
+import com.example.ecomerce.dto.request.ProductRequest;
 import com.example.ecomerce.dto.response.ProductResponse;
 import com.example.ecomerce.entity.ProductEntity;
 import com.example.ecomerce.repository.ProductRepository;
@@ -18,60 +19,47 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public ProductResponse addProduct(@Valid  ProductResponse request ) {
+    public ProductResponse addProduct(@Valid ProductRequest request) {
 
-            if(productRepository.existsById(request.id())){
-                throw new IllegalArgumentException("product already exists");
-            }
+        ProductEntity entity = new ProductEntity();
+        entity.setId(UUID.randomUUID());
+        entity.setName(request.name());
+        entity.setDescription(request.description());
+        entity.setCategory(request.category());
+        entity.setPrice(Double.parseDouble(request.price()));
 
-            ProductEntity productEntity = new ProductEntity();
+        ProductEntity saved = productRepository.save(entity);
 
-            return new ProductResponse(
-                    UUID.randomUUID(), request.name(),
-                    request.description(),
-                    request.category(),
-                    request.price()
-                    );
-
+        return ProductResponse.of(saved);
     }
 
-   public List<ProductResponse> getAllProducts( ){
-        return (List<ProductResponse>) productRepository.
-                findAll().stream().map(products ->  new ProductResponse(
-                        products.getId(),
-                        products.getName(),
-                        products.getDescription(),
-                        products.getCategory(),
-                        products.getPrice()
-                ));
-   }
+    public List<ProductResponse> getAllProducts() {
+        return productRepository.findAll()
+                .stream()
+                .map(ProductResponse::of)
+                .toList();
+    }
 
-   public ProductResponse updateProduct(@Valid  ProductResponse request ) {
 
-       UUID id = null;
-       ProductEntity productEntity = productRepository.findById(id).orElseThrow(
-              () -> new IllegalArgumentException("product not found")
-      );
+    public ProductResponse updateProduct(UUID id, @Valid ProductRequest request) {
 
-      if(!productEntity.getName().equals((productEntity.getName()))){
-          throw new IllegalArgumentException("product name does not match");
-      }
-      productEntity.setDescription(request.description());
-      productEntity.setCategory(request.category());
+        ProductEntity entity = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("product not found"));
 
-      return new ProductResponse(
-              UUID.randomUUID(), request.name(),
-              request.description(),
-              request.category(),
-              request.price()
-      );
+        entity.setName(request.name());
+        entity.setDescription(request.description());
+        entity.setCategory(request.category());
+        entity.setPrice(Double.parseDouble(request.price()));
 
-   }
+        return ProductResponse.of(entity);
+    }
 
+    // DELETE
     public void deleteProduct(UUID id) {
-        var product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(String.valueOf(id)));
+        if (!productRepository.existsById(id)) {
+            throw new IllegalArgumentException("product not found");
+        }
 
-        productRepository.delete(product);
+        productRepository.deleteById(id);
     }
 }

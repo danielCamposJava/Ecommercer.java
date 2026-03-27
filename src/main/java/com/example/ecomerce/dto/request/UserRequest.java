@@ -1,4 +1,19 @@
 package com.example.ecomerce.dto.request;
 
-public class UserRequest {
+import jakarta.validation.constraints.NotBlank;
+
+import javax.swing.*;
+
+public record UserRequest (
+
+        @NotBlank
+        String name,
+
+        @NotBlank
+        String email,
+
+        @NotBlank
+        String password
+
+){
 }

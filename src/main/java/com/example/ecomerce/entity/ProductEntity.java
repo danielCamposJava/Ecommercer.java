@@ -31,13 +31,19 @@ public class ProductEntity {
     private int quantity;
 
 
-    public ProductEntity(String name, String description, String category, double price, int quantity, double unitPrice)) {
+    public ProductEntity(String name, String description, String category, double price, int quantity, double unitPrice) {
         this.name = name;
         this.description = description;
         this.category = category;
         this.price = price;
         this.quantity = quantity;
 }
+
+    public ProductEntity() {
+
+    }
+
+
     public UUID getId() {
         return id;
     }
