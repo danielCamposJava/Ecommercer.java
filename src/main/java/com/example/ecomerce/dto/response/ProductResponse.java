@@ -9,13 +9,8 @@ public record ProductResponse (UUID id,
                                String description,
                                String category,
                                double price
-
-
 ){
-
-
     public  static ProductResponse FromEntity(ProductEntity entity){
-
         return  new ProductResponse(
                 entity.getId(),
                 entity.getName(),
