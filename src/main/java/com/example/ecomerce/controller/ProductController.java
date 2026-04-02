@@ -1,15 +1,17 @@
 package com.example.ecomerce.controller;
-
+import com.example.ecomerce.dto.request.ProductFilter;
 import com.example.ecomerce.dto.request.ProductRequest;
 import com.example.ecomerce.dto.response.ProductResponse;
 import com.example.ecomerce.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,8 +28,11 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponse>> getAll() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public Page<ProductResponse> getProducts(
+            @ModelAttribute ProductFilter filter,
+            @PageableDefault(size = 10, sort = "name") Pageable pageable
+    ) {
+        return productService.getProducts(filter, pageable);
     }
 
     @PutMapping("/{id}")
