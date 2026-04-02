@@ -1,5 +1,6 @@
 package com.example.ecomerce.service;
 
+import com.example.ecomerce.dto.request.ProductFilter;
 import com.example.ecomerce.dto.request.ProductRequest;
 import com.example.ecomerce.dto.response.ProductResponse;
 import com.example.ecomerce.entity.ProductEntity;
@@ -11,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -37,8 +37,8 @@ public class ProductService {
         return ProductResponse.of(saved);
     }
 
-    // 🔥 FILTRO DINÂMICO + PAGINAÇÃO + MULTI-CATEGORIA
-    public Page<ProductResponse> getProducts(com.example.ecomerce.dto.request.ProductFilter filter, Pageable pageable){
+
+    public Page<ProductResponse> getProducts(ProductFilter filter, Pageable pageable){
 
         Specification<ProductEntity> spec = Specification.where((Specification<ProductEntity>) null);
 
