@@ -30,6 +30,12 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
 
+    //role
+    @Getter
+    @Setter
+    @Column(nullable = false)
+    private String role;
+
     @Setter
     @Getter
     @Column(nullable = false)

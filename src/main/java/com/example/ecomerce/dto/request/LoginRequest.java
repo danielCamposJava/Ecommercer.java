@@ -1,4 +1,8 @@
 package com.example.ecomerce.dto.request;
 
-public class LoginRequest {
+public record LoginRequest(
+
+        String email,
+        String password
+) {
 }
