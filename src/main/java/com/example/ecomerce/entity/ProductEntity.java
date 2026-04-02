@@ -2,6 +2,8 @@ package com.example.ecomerce.entity;
 
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 
 import java.util.UUID;
@@ -11,19 +13,29 @@ import java.util.UUID;
 @SQLDelete( sql = "UPDATE product SET deleted = true WHERE id =?")
 public class ProductEntity {
 
+    @Setter
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Setter
+    @Getter
     @Column( nullable = false, unique = true)
     private String name;
 
+    @Setter
+    @Getter
     @Column( nullable = false, unique = true)
     private String description;
 
+    @Setter
+    @Getter
     @Column(nullable = false, unique = true)
     private String category;
 
+    @Setter
+    @Getter
     @Column(nullable = false)
     private double price;
 
@@ -41,44 +53,6 @@ public class ProductEntity {
 
     public ProductEntity() {
 
-    }
-
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription( ) {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    public String getCategory() {
-        return category;
-    }
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
     }
 
 
