@@ -39,9 +39,26 @@ public class ProductEntity {
     @Column(nullable = false)
     private double price;
 
+    @Getter
+    @Setter
+    @Column(nullable = false)
+    private int stock ;
+
+    @Getter
+    @Setter
     @Column(nullable = false)
     private int quantity;
 
+    @Getter
+    @Setter
+    @Version //Controlle de Concorrencia
+    private  Long version;
+
+    public  void decreaseStock(int quantity){
+        if(this.stock < quantity ){
+            throw  new RollbackException( "Estoque insuficiente");
+        }
+    }
 
     public ProductEntity(String name, String description, String category, double price, int quantity, double unitPrice) {
         this.name = name;
