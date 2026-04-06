@@ -61,19 +61,37 @@ public class CartEntity {
         item.setCart(this);
     }
 
-    public void removeProduct(UUID productId) {
-        CartItemEntity item = findItemByProduct(productId)
-                .orElseThrow(() -> new RuntimeException("Item não encontrado"));
-
-        items.remove(item);
-        item.setCart(null);
-    }
-
     public BigDecimal getTotal() {
         return items.stream()
                 .map(i -> i.getPrice()
                         .multiply(BigDecimal.valueOf(i.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public void uodateProductQuantity(UUID productId, int quantity) throws IllegalAccessException {
+
+          if( quantity < 0){
+              throw  new IllegalAccessException("Quantidade invalida");
+          }
+
+
+          CartItemEntity item = findItemByProduct(productId)
+                     .orElseThrow(() -> new RuntimeException("Produto não esta no carrinho "));
+
+        if( quantity == 0){
+            removeProduct(productId);
+        } else {
+
+            item.updateQuantity(quantity);
+        }
+    }
+
+    public void  removeProduct(UUID  productId){
+        CartItemEntity item = findItemByProduct(productId)
+                .orElseThrow(() -> new RuntimeException("Produto não esta no carrinho "));
+
+        items.remove(item);
+        item.setCart(null);
     }
 
 
