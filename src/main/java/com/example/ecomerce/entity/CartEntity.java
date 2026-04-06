@@ -68,7 +68,7 @@ public class CartEntity {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void uodateProductQuantity(UUID productId, int quantity) throws IllegalAccessException {
+    public void updateProductQuantity(UUID productId, int quantity) throws IllegalAccessException {
 
           if( quantity < 0){
               throw  new IllegalAccessException("Quantidade invalida");
