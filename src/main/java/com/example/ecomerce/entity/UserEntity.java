@@ -46,7 +46,7 @@ public class UserEntity {
     @Column(nullable = false)
     private String zip;
 
-    // 🔥 Construtor completo corrigido
+    //  Construtor completo corrigido
     public UserEntity(String name, String email, String password, String role,
                       String phone, String address, String city,
                       String state, String country, String zip) {
@@ -63,7 +63,7 @@ public class UserEntity {
         this.zip = zip;
     }
 
-    // 🔥 Construtor vazio obrigatório pro JPA
+    //  Construtor vazio obrigatório pro JPA
     public UserEntity() {
     }
 }

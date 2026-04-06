@@ -82,7 +82,9 @@ public class ProductService {
         entity.setCategory(request.category());
         entity.setPrice(Double.parseDouble(request.price()));
 
-        return ProductResponse.of(entity);
+        ProductEntity saved = productRepository.save(entity);
+
+        return ProductResponse.of(saved);
     }
 
     public void deleteProduct(UUID id) {

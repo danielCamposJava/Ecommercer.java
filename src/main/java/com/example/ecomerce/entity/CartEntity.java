@@ -98,7 +98,7 @@ public class CartEntity {
                 .orElseThrow(() -> new RuntimeException("Produto não está no carrinho"));
 
         items.remove(item);
-        item.setCart(null); // 🔥 importante pro orphanRemoval funcionar
+        item.setCart(null);
     }
 
     // evita loop infinito no log

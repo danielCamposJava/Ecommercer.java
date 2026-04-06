@@ -68,7 +68,8 @@ public class UserService {
         entity.setCountry(request.country());
         entity.setZip(request.zip());
 
-        return UserResponse.fromEntity(entity);
+        UserEntity saved = userRepository.save(entity);
+        return UserResponse.fromEntity(saved);
     }
 
     public void deleteUser(UUID id) {
