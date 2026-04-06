@@ -8,31 +8,38 @@ import java.math.BigDecimal;
 import java.util.*;
 
 @Entity
+@Table(name = "carts")
+@Getter
 public class CartEntity {
 
-    @Getter
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Setter
-    @Getter
+    @Column(nullable = false)
     private UUID userId;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "cart",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private List<CartItemEntity> items = new ArrayList<>();
 
+    //  evita alteração externa da lista
     public List<CartItemEntity> getItems() {
         return Collections.unmodifiableList(items);
     }
 
+    //  busca item por produto
     public Optional<CartItemEntity> findItemByProduct(UUID productId) {
         return items.stream()
                 .filter(i -> i.getProduct().getId().equals(productId))
                 .findFirst();
     }
 
-    public void addProduct( ProductEntity product, int quantity) {
+    // adicionar produto
+    public void addProduct(ProductEntity product, int quantity) {
 
         if (product == null) {
             throw new IllegalArgumentException("Produto não pode ser nulo");
@@ -45,22 +52,21 @@ public class CartEntity {
         Optional<CartItemEntity> existingItem = findItemByProduct(product.getId());
 
         if (existingItem.isPresent()) {
-            CartItemEntity item = existingItem.get();
-            item.increaseQuantity(quantity);
+            existingItem.get().increaseQuantity(quantity);
         } else {
-            CartItemEntity newItem = new CartItemEntity(product, quantity, product.getPrice());
+            CartItemEntity newItem =
+                    new CartItemEntity(product, quantity, product.getPrice());
             addItem(newItem);
         }
     }
 
+    // controla consistência da relação
     private void addItem(CartItemEntity item) {
-        if (item == null) {
-            throw new IllegalArgumentException("Item não pode ser nulo");
-        }
         items.add(item);
         item.setCart(this);
     }
 
+    //  total do carrinho
     public BigDecimal getTotal() {
         return items.stream()
                 .map(i -> i.getPrice()
@@ -68,31 +74,36 @@ public class CartEntity {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void updateProductQuantity(UUID productId, int quantity) throws IllegalAccessException {
+    //  atualizar quantidade
+    public void updateProductQuantity(UUID productId, int quantity) {
 
-          if( quantity < 0){
-              throw  new IllegalAccessException("Quantidade invalida");
-          }
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantidade inválida");
+        }
 
+        CartItemEntity item = findItemByProduct(productId)
+                .orElseThrow(() -> new RuntimeException("Produto não está no carrinho"));
 
-          CartItemEntity item = findItemByProduct(productId)
-                     .orElseThrow(() -> new RuntimeException("Produto não esta no carrinho "));
-
-        if( quantity == 0){
+        if (quantity == 0) {
             removeProduct(productId);
         } else {
-
             item.updateQuantity(quantity);
         }
     }
 
-    public void  removeProduct(UUID  productId){
+    //  remover produto
+    public void removeProduct(UUID productId) {
+
         CartItemEntity item = findItemByProduct(productId)
-                .orElseThrow(() -> new RuntimeException("Produto não esta no carrinho "));
+                .orElseThrow(() -> new RuntimeException("Produto não está no carrinho"));
 
         items.remove(item);
-        item.setCart(null);
+        item.setCart(null); // 🔥 importante pro orphanRemoval funcionar
     }
 
-
+    // evita loop infinito no log
+    @Override
+    public String toString() {
+        return "CartEntity{id=" + id + ", total=" + getTotal() + "}";
+    }
 }

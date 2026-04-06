@@ -23,18 +23,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                //  desativa csrf (API REST)
                 .csrf(AbstractHttpConfigurer::disable)
 
-                //  não usa sessão (JWT é stateless)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // regras de acesso
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // login liberado
-                        .anyRequest().authenticated() // resto protegido
+                        .requestMatchers("/**").permitAll() // 🔥 libera tudo (teste)
                 )
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

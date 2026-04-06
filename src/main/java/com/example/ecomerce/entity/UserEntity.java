@@ -7,47 +7,33 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Table(name = "User")
+@Table(name = "users") // 🔥 corrigido (evita palavra reservada)
+@Getter
+@Setter
 public class UserEntity {
-    @Setter
-    @Getter
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Setter
-    @Getter
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Setter
-    @Getter
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Setter
-    @Getter
     @Column(nullable = false)
     private String password;
 
-    //role
-    @Getter
-    @Setter
     @Column(nullable = false)
     private String role;
 
-    @Setter
-    @Getter
     @Column(nullable = false)
     private String phone;
 
-    @Setter
-    @Getter
     @Column(nullable = false)
     private String address;
 
-    @Setter
-    @Getter
     @Column(nullable = false)
     private String city;
 
@@ -60,20 +46,24 @@ public class UserEntity {
     @Column(nullable = false)
     private String zip;
 
-
-    public UserEntity(String name, String email, String password, String phone, String address, String city, String state, String country, String zip) {
+    // 🔥 Construtor completo corrigido
+    public UserEntity(String name, String email, String password, String role,
+                      String phone, String address, String city,
+                      String state, String country, String zip) {
 
         this.name = name;
         this.email = email;
         this.password = password;
+        this.role = role;
         this.phone = phone;
         this.address = address;
         this.city = city;
         this.state = state;
+        this.country = country;
+        this.zip = zip;
     }
 
+    // 🔥 Construtor vazio obrigatório pro JPA
     public UserEntity() {
-
     }
-
 }

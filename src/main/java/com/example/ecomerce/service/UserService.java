@@ -3,11 +3,10 @@ package com.example.ecomerce.service;
 import com.example.ecomerce.dto.request.UserRequest;
 import com.example.ecomerce.dto.response.UserResponse;
 import com.example.ecomerce.entity.UserEntity;
-import com.example.ecomerce.repository.ProductRepository;
 import com.example.ecomerce.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,43 +18,62 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
+    private final PasswordEncoder passwordEncoder;
 
+    public UserResponse createUser(UserRequest request) {
 
-    public UserResponse createUser(@Valid UserRequest userRequest) {
+        if (userRepository.existsByEmail(request.email())) {
+            throw new RuntimeException("Email already exists");
+        }
 
         UserEntity entity = new UserEntity();
-        entity.setId(UUID.randomUUID());
-        entity.setEmail(userRequest.email());
-        entity.setPassword(userRequest.password());
 
-        UserEntity saved= userRepository.save(entity);
+        entity.setName(request.name());
+        entity.setEmail(request.email());
+        entity.setPassword(passwordEncoder.encode(request.password()));
+        entity.setRole("USER");
 
-        return UserResponse.of(saved);
+        entity.setPhone(request.phone());
+        entity.setAddress(request.address());
+        entity.setCity(request.city());
+        entity.setState(request.state());
+        entity.setCountry(request.country());
+        entity.setZip(request.zip());
+
+        UserEntity saved = userRepository.save(entity);
+
+        return UserResponse.fromEntity(saved);
     }
 
-    public  List<UserResponse> getAllUser() {
-        return  userRepository.
-                findAll().
-                stream().
-                map(UserResponse::of)
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserResponse::fromEntity)
                 .toList();
     }
 
-    public UserResponse updateUser(UUID id ,@Valid UserRequest userRequest) {
+    public UserResponse updateUser(UUID id, UserRequest request) {
 
-        UserEntity entity = userRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("User nor found")
-        );
-        entity.setEmail(userRequest.email());
-        entity.setPassword(userRequest.password());
+        UserEntity entity = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return UserResponse.of(entity);
+        entity.setName(request.name());
+        entity.setEmail(request.email());
+        entity.setPassword(passwordEncoder.encode(request.password()));
+
+        entity.setPhone(request.phone());
+        entity.setAddress(request.address());
+        entity.setCity(request.city());
+        entity.setState(request.state());
+        entity.setCountry(request.country());
+        entity.setZip(request.zip());
+
+        return UserResponse.fromEntity(entity);
     }
 
     public void deleteUser(UUID id) {
         if (!userRepository.existsById(id)) {
-            throw new IllegalArgumentException("User not found");
+            throw new RuntimeException("User not found");
         }
 
         userRepository.deleteById(id);

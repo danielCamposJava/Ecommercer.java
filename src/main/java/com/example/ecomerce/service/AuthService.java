@@ -18,15 +18,16 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
 
-        UserEntity user = (UserEntity) userRepository.findByEmail(request.email())
+        UserEntity user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // valida senha corretamente
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
 
         String token = jwtService.generateToken(user);
 
-        return new AuthResponse(token );
+        return new AuthResponse(token);
     }
 }

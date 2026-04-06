@@ -6,36 +6,43 @@ import com.example.ecomerce.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-@Controller
-@RequestMapping
+@RestController
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest userRequest) {
-        UserResponse response = userService.createUser(userRequest);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request) {
+
+        UserResponse response = userService.createUser(request);
+
+        return ResponseEntity
+                .created(URI.create("/users/" + response.id()))
+                .body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> findAll() {
-        return ResponseEntity.ok(userService.getAllUser());
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable UUID id, @Valid @RequestBody UserRequest userRequest) {
-        return ResponseEntity.ok(userService.updateUser(id, userRequest));
+    public ResponseEntity<UserResponse> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody UserRequest request
+    ) {
+        return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<UserResponse> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
