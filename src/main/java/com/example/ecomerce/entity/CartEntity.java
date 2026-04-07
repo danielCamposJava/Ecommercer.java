@@ -10,7 +10,7 @@ import java.util.*;
 @Entity
 @Table(name = "carts")
 @Getter
-public class CartEntity {
+public class CartEntity extends CartItemEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -19,6 +19,11 @@ public class CartEntity {
     @Setter
     @Column(nullable = false)
     private UUID userId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @Getter
+    @Setter
+    private UserEntity user;
 
     @OneToMany(mappedBy = "cart",
             cascade = CascadeType.ALL,
@@ -105,5 +110,16 @@ public class CartEntity {
     @Override
     public String toString() {
         return "CartEntity{id=" + id + ", total=" + getTotal() + "}";
+    }
+
+
+    public void setCart(CartEntity cart) {
+
+    }
+
+    public void setProduct(ProductEntity product) {
+    }
+
+    public void setQuantity(int quantity) {
     }
 }

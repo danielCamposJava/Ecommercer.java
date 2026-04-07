@@ -17,6 +17,7 @@ public class CartItemEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+
     //  DONO DA RELAÇÃO COM CART
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cart_id", nullable = false, updatable = false)
