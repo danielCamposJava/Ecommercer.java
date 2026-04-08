@@ -10,40 +10,36 @@ import java.util.*;
 @Entity
 @Table(name = "carts")
 @Getter
-public class CartEntity extends CartItemEntity {
+public class CartEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Setter
-    @Column(nullable = false)
-    private UUID userId;
-
+    // 🔥 RELACIONAMENTO CORRETO
     @OneToOne(fetch = FetchType.LAZY)
-    @Getter
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     @Setter
     private UserEntity user;
 
-    @OneToMany(mappedBy = "cart",
+    @OneToMany(
+            mappedBy = "cart",
             cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
+            orphanRemoval = true
+    )
     private List<CartItemEntity> items = new ArrayList<>();
 
-    //  evita alteração externa da lista
+    // evita alteração externa
     public List<CartItemEntity> getItems() {
         return Collections.unmodifiableList(items);
     }
 
-    //  busca item por produto
     public Optional<CartItemEntity> findItemByProduct(UUID productId) {
         return items.stream()
                 .filter(i -> i.getProduct().getId().equals(productId))
                 .findFirst();
     }
 
-    // adicionar produto
     public void addProduct(ProductEntity product, int quantity) {
 
         if (product == null) {
@@ -58,28 +54,26 @@ public class CartEntity extends CartItemEntity {
 
         if (existingItem.isPresent()) {
             existingItem.get().increaseQuantity(quantity);
-        } else {
-            CartItemEntity newItem =
-                    new CartItemEntity(product, quantity, product.getPrice());
-            addItem(newItem);
+            return;
         }
+
+        CartItemEntity newItem =
+                new CartItemEntity(product, quantity, product.getPrice());
+
+        addItem(newItem);
     }
 
-    // controla consistência da relação
     private void addItem(CartItemEntity item) {
-        items.add(item);
         item.setCart(this);
+        items.add(item);
     }
 
-    //  total do carrinho
     public BigDecimal getTotal() {
         return items.stream()
-                .map(i -> i.getPrice()
-                        .multiply(BigDecimal.valueOf(i.getQuantity())))
+                .map(CartItemEntity::getTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    //  atualizar quantidade
     public void updateProductQuantity(UUID productId, int quantity) {
 
         if (quantity < 0) {
@@ -91,12 +85,12 @@ public class CartEntity extends CartItemEntity {
 
         if (quantity == 0) {
             removeProduct(productId);
-        } else {
-            item.updateQuantity(quantity);
+            return;
         }
+
+        item.updateQuantity(quantity);
     }
 
-    //  remover produto
     public void removeProduct(UUID productId) {
 
         CartItemEntity item = findItemByProduct(productId)
@@ -106,20 +100,8 @@ public class CartEntity extends CartItemEntity {
         item.setCart(null);
     }
 
-    // evita loop infinito no log
     @Override
     public String toString() {
-        return "CartEntity{id=" + id + ", total=" + getTotal() + "}";
-    }
-
-
-    public void setCart(CartEntity cart) {
-
-    }
-
-    public void setProduct(ProductEntity product) {
-    }
-
-    public void setQuantity(int quantity) {
+        return "CartEntity{id=" + id + "}";
     }
 }

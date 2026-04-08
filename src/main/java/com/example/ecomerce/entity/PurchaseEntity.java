@@ -26,10 +26,13 @@ public class PurchaseEntity {
     @Getter
     private int quantity;
 
-    public void setProduvt(ProductEntity product) {
-    }
+
 
     public void setUser(UserEntity user) {
+
+    }
+
+    public void setProduct(ProductEntity product) {
 
     }
 }

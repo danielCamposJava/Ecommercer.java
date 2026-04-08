@@ -26,7 +26,7 @@ public class ProductService {
     public ProductResponse addProduct(@Valid ProductRequest request) {
 
         ProductEntity entity = new ProductEntity();
-        entity.setId(UUID.randomUUID());
+        //entity.setId(UUID.randomUUID());
         entity.setName(request.name());
         entity.setDescription(request.description());
         entity.setCategory(request.category());
@@ -38,39 +38,12 @@ public class ProductService {
     }
 
 
-    public Page<ProductResponse> getProducts(ProductFilter filter, Pageable pageable){
 
-        Specification<ProductEntity> spec = Specification.where((Specification<ProductEntity>) null);
-
-        if(filter.name() != null && !filter.name().isBlank()){
-            spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.get("name")),
-                            "%" + filter.name().toLowerCase() + "%"));
-        }
-
-        if (filter.category() != null && !filter.category().isBlank()) {
-
-            List<String> categories = Arrays.stream(filter.category().split(","))
-                    .map(String::trim)
-                    .toList();
-
-            spec = spec.and((root, query, cb) ->
-                    root.get("category").in(categories));
-        }
-
-        if (filter.minPrice() != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.greaterThanOrEqualTo(root.get("price"), filter.minPrice()));
-        }
-
-        if (filter.maxPrice() != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.lessThanOrEqualTo(root.get("price"), filter.maxPrice()));
-        }
-
-        return productRepository.findAll(spec, pageable)
-                .map(ProductResponse::of);
+   public List<ProductResponse>getAllProduct(){
+        return productRepository.findAll()
+                .stream().map( ProductResponse ::of).toList();
     }
+
 
     public ProductResponse updateProduct(UUID id, @Valid ProductRequest request) {
 

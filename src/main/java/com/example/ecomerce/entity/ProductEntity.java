@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "product")
-@SQLDelete( sql = "UPDATE product SET deleted = true WHERE id =?")
 public class ProductEntity {
 
     @Setter

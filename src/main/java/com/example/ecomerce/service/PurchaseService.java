@@ -14,13 +14,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PurchaseService {
 
-    private  final CartRepository cartRepository;
-    private  final CartItemRepository cartItemRepository;
-    private  final UserRepository userRepository;
-    private  final ProductRepository productRepository;
-    private  final PurchaseRepository purchaseRepository;
+    private final CartRepository cartRepository;
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final PurchaseRepository purchaseRepository;
 
-    //Cria ou retorna o carrinho ativo
+    //  Busca ou cria carrinho
     public CartEntity getOrCreateCart(UserEntity user) {
         return cartRepository.findByUser(user)
                 .orElseGet(() -> {
@@ -30,85 +29,115 @@ public class PurchaseService {
                 });
     }
 
-    //Adiciona um produto ao carrinho
-    public  void addProductToCart(UUID userId, UUID productId, int quantity){
-        UserEntity user = userRepository.findById(userId).orElseThrow(
-                () -> new RuntimeException("User not found")
-        );
+    //  Adicionar produto
+    public void addProductToCart(UUID userId, UUID productId, int quantity) {
 
-        ProductEntity product = productRepository.findById(productId).
-                orElseThrow( () -> new RuntimeException("Product not found"));
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantidade inválida");
+        }
+
+        UserEntity user = getUser(userId);
+        ProductEntity product = getProduct(productId);
+
+        validateStock(product, quantity);
 
         CartEntity cart = getOrCreateCart(user);
 
-        CartEntity item = new CartItemEntity().getCart();
-        item.setCart(cart);
-        item.setProduct(product);
-        item.setQuantity(quantity);
-
-        cart.getItems().add(item);
-        cartRepository.save(cart);
-    }
-
-    //removae o prpduto do carrinho
-    public void removeProductFromCart(UUID userId, UUID prodcutId){
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow( () -> new RuntimeException("User Not Found") );
-
-        CartEntity cart = cartRepository.findByUser(user)
-                .orElseThrow( () -> new RuntimeException("Cart Not Found "));
-        cart.getItems().removeIf(i -> i.getProduct().getId().equals(prodcutId));
+        //  usa o domínio corretamente
+        cart.addProduct(product, quantity);
 
         cartRepository.save(cart);
     }
 
-    public List<CartItemEntity>getCart(UUID  userId ){
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow( () -> new RuntimeException("User Not Found") );
+    //  Remover produto
+    public void removeProductFromCart(UUID userId, UUID productId) {
 
-        CartEntity cart = cartRepository.findByUser(user)
-                .orElseThrow( () -> new RuntimeException("Cart Not Found "));
+        UserEntity user = getUser(userId);
+        CartEntity cart = getCart(user);
+
+        cart.removeProduct(productId);
+
+        cartRepository.save(cart);
+    }
+
+    //  Visualizar carrinho
+    public List<CartItemEntity> getCart(UUID userId) {
+
+        UserEntity user = getUser(userId);
+        CartEntity cart = getCart(user);
 
         return cart.getItems();
-
     }
 
-    //finaliza Compra
-    public  void Checkout( UUID userId) {
+    //  Checkout
+    public void checkout(UUID userId) {
 
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow( () -> new RuntimeException("User Not Found") );
+        UserEntity user = getUser(userId);
+        CartEntity cart = getCart(user);
 
-        CartEntity cart = cartRepository.findByUser(user)
-                .orElseThrow( () -> new RuntimeException("Cart Not Found "));
-
-
-        if(cart.getItems().isEmpty()){
-            throw  new RuntimeException("Cart is empty");
-
+        if (cart.getItems().isEmpty()) {
+            throw new RuntimeException("Carrinho vazio");
         }
 
-        //Cria o históridico
-        for(CartItemEntity item : cart.getItems()){
+        //  valida estoque novamente (CRÍTICO)
+        for (CartItemEntity item : cart.getItems()) {
+            validateStock(item.getProduct(), item.getQuantity());
+        }
+
+        //  cria histórico
+        for (CartItemEntity item : cart.getItems()) {
+
             PurchaseEntity purchase = new PurchaseEntity();
             purchase.setUser(user);
-            purchase.setProduvt(item.getProduct());
+            purchase.setProduct(item.getProduct()); // corrigido
             purchase.setQuantity(item.getQuantity());
 
             purchaseRepository.save(purchase);
+
+            //  baixa estoque (simples)
+            ProductEntity product = item.getProduct();
+            product.setStock(product.getStock() - item.getQuantity());
         }
 
-        //Limpa Carrinho
+        //  limpa carrinho
         cart.getItems().clear();
+
         cartRepository.save(cart);
+    }
 
+    // Métodos auxiliares
 
+    private UserEntity getUser(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    }
+
+    private ProductEntity getProduct(UUID productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+    }
+
+    private CartEntity getCart(UserEntity user) {
+        return cartRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Carrinho não encontrado"));
+    }
+
+    private void validateStock(ProductEntity product, int quantity) {
+        if (product.getStock() < quantity) {
+            throw new RuntimeException("Estoque insuficiente");
+        }
+    }
+
+    public List<PurchaseEntity> getPurchases(UUID userId) {
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        return purchaseRepository.findByUser(user);
+    }
     }
 
 
 
 
 
-
-
-}
