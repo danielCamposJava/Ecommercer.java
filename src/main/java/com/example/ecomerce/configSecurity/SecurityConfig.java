@@ -17,22 +17,36 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    public final JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                //  desabilita csrf (API stateless)
                 .csrf(AbstractHttpConfigurer::disable)
 
+                // sem sessão (JWT)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                //  regras de acesso
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll() // 🔥 libera tudo (teste)
+
+                        // ROTAS PÚBLICAS
+                        .requestMatchers(
+                                "/auth/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        //  ROTAS PROTEGIDAS
+                        .anyRequest().authenticated()
                 )
 
+                //  filtro JWT antes do Spring
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

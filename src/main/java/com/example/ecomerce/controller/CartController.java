@@ -22,14 +22,12 @@ public class CartController {
 
     }
 
-    @PostMapping("/{cartId}items")
+    @PostMapping("/cart/add")
     public ResponseEntity<Void> addProduct(
-            @PathVariable UUID cartId,
             @RequestParam UUID productId,
-            @RequestParam int quantity
-            ){
+            @RequestParam int quantity) {
 
-        cartService.addProduct(cartId,productId,quantity);
+        cartService.addProduct(productId, quantity);
         return ResponseEntity.ok().build();
     }
 
