@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
-
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -25,36 +23,41 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
-
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/auth/") ||
-                path.startsWith("/h2-console") ||
-                path.startsWith("/v3/api-docs") ||
-                path.startsWith("/swagger-ui");
+
+        return path.startsWith("/auth/")
+                || path.startsWith("/h2-console")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-ui");
     }
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
 
+        // 🔥 Se não tem token, segue o fluxo (mas NÃO autentica)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            String token = authHeader.substring(7);
-            String email = jwtService.extractEmail(token);
+            final String token = authHeader.substring(7);
+            final String email = jwtService.extractEmail(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserEntity user = userRepository.findByEmail(email).orElse(null);
 
-                if (user != null && jwtService.isTokenValid(token, user)) {
+                UserEntity user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+                if (jwtService.isTokenValid(token, user)) {
 
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
@@ -63,11 +66,15 @@ public class JwtFilter extends OncePerRequestFilter {
                                     user.getAuthorities()
                             );
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
+                    // AQUI É O MAIS IMPORTANTE
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
+
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
         }

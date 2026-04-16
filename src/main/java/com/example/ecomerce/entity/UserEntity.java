@@ -1,11 +1,12 @@
 package com.example.ecomerce.entity;
 
+import com.example.ecomerce.Enum.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.UUID;
 public class UserEntity implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(nullable = false)
@@ -30,8 +31,9 @@ public class UserEntity implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role;
+    private Role role;
 
     @Column(nullable = false)
     private String phone;
@@ -51,7 +53,9 @@ public class UserEntity implements UserDetails {
     @Column(nullable = false)
     private String zip;
 
-    public UserEntity(String name, String email, String password, String role,
+    public UserEntity() {}
+
+    public UserEntity(String name, String email, String password, Role role,
                       String phone, String address, String city,
                       String state, String country, String zip) {
 
@@ -67,44 +71,19 @@ public class UserEntity implements UserDetails {
         this.zip = zip;
     }
 
-    public UserEntity() {}
-
-    //  ROLE
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
-    //  USERNAME (Spring usa isso!)
     @Override
     public String getUsername() {
-        return this.email;
+        return email;
     }
 
-    //  PASSWORD
-    @Override
-    public String getPassword() {
-        return this.password;
-    }
-
-    //  FLAGS (deixa tudo true por enquanto)
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    // obrigatório do UserDetails
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return true; }
 }

@@ -1,5 +1,6 @@
 package com.example.ecomerce.service;
 
+import com.example.ecomerce.Enum.Role;
 import com.example.ecomerce.dto.request.UserRequest;
 import com.example.ecomerce.dto.response.UserResponse;
 import com.example.ecomerce.entity.UserEntity;
@@ -31,7 +32,7 @@ public class UserService {
         entity.setName(request.name());
         entity.setEmail(request.email());
         entity.setPassword(passwordEncoder.encode(request.password()));
-        entity.setRole("USER");
+        entity.setRole(Role.valueOf("USER"));
 
         entity.setPhone(request.phone());
         entity.setAddress(request.address());

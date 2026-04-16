@@ -9,7 +9,7 @@ public record UserResponse(
         String name,
         String email,
         String password,
-        String role,
+        com.example.ecomerce.Enum.Role role,
         String phone,
         String address,
         String city,

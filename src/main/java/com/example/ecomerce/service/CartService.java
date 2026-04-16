@@ -103,16 +103,19 @@ public class CartService {
     }
 
     private UserEntity getAuthenticatedUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
             throw new RuntimeException("Usuário não autenticado");
         }
 
-        if (auth.getPrincipal() instanceof UserEntity user) {
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof UserEntity user) {
             return user;
         }
 
-        throw new RuntimeException("Usuário inválido no contexto de segurança");
+        throw new RuntimeException("Usuário inválido");
     }
 }
