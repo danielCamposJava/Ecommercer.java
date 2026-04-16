@@ -17,7 +17,7 @@ import java.util.UUID;
 public class ProductController {
 
     private final ProductService productService;
-
+    @CrossOrigin ( origins= "http://locahost:8080")
     @PostMapping("/createProduct")
     public ResponseEntity<ProductResponse> create(@Valid @RequestBody ProductRequest request) {
         ProductResponse response = productService.addProduct(request);

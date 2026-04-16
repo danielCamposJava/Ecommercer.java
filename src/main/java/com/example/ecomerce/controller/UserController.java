@@ -17,7 +17,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-
+    @CrossOrigin ( origins= "http://locahost:8080")
     @PostMapping
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request) {
 

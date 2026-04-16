@@ -5,26 +5,32 @@ import com.example.ecomerce.entity.ProductEntity;
 import com.example.ecomerce.entity.UserEntity;
 import com.example.ecomerce.repository.CartRepository;
 import com.example.ecomerce.repository.ProductRepository;
+import com.example.ecomerce.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CartService {
 
+    private final UserRepository  userRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
 
-    @Transactional
+    // =========================
+    // PUBLIC METHODS
+    // =========================
+
     public void addProduct(UUID productId, int quantity) {
 
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
+        validateQuantity(quantity);
 
         UserEntity user = getAuthenticatedUser();
         CartEntity cart = getOrCreateCart(user);
@@ -37,7 +43,6 @@ public class CartService {
         cartRepository.save(cart);
     }
 
-    @Transactional
     public void updateProduct(UUID productId, UUID id, int quantity) {
 
         UserEntity user = getAuthenticatedUser();
@@ -53,7 +58,6 @@ public class CartService {
         cartRepository.save(cart);
     }
 
-    @Transactional
     public void removeProduct(UUID productId, UUID id) {
 
         UserEntity user = getAuthenticatedUser();
@@ -65,20 +69,19 @@ public class CartService {
     }
 
     public CartEntity getMyCart() {
-        UserEntity user = getAuthenticatedUser();
-        return getOrCreateCart(user);
+        return getOrCreateCart(getAuthenticatedUser());
     }
 
     // =========================
-    // MÉTODOS PRIVADOS
+    // PRIVATE METHODS
     // =========================
 
     private CartEntity getOrCreateCart(UserEntity user) {
         return cartRepository.findByUser(user)
                 .orElseGet(() -> {
-                    CartEntity newCart = new CartEntity();
-                    newCart.setUser(user);
-                    return cartRepository.save(newCart);
+                    CartEntity cart = new CartEntity();
+                    cart.setUser(user);
+                    return cartRepository.save(cart);
                 });
     }
 
@@ -93,22 +96,23 @@ public class CartService {
         }
     }
 
+    private void validateQuantity(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantidade inválida");
+        }
+    }
+
     private UserEntity getAuthenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        // depende de como você salvou no JWT
-        Object principal = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            throw new RuntimeException("Usuário não autenticado");
+        }
 
-        if (principal instanceof UserEntity user) {
+        if (auth.getPrincipal() instanceof UserEntity user) {
             return user;
         }
 
-        throw new RuntimeException("Usuário não autenticado");
-    }
-
-    public CartEntity getCartById(UUID cartId) {
-        return cartRepository.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+        throw new RuntimeException("Usuário inválido no contexto de segurança");
     }
 }

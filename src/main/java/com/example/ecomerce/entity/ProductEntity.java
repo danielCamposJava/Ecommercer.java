@@ -1,75 +1,81 @@
 package com.example.ecomerce.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.SQLDelete;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "product")
+@Getter
+@Setter
 public class ProductEntity {
 
-    @Setter
-    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Setter
-    @Getter
-    @Column( nullable = false, unique = true)
+    // Nome pode ser único dependendo do negócio (mantive SEM unique por segurança)
+    @Column(nullable = false)
     private String name;
 
-    @Setter
-    @Getter
-    @Column( nullable = false, unique = true)
+    // Nunca deve ser unique
+    @Column(nullable = false, length = 500)
     private String description;
 
-    @Setter
-    @Getter
-    @Column(nullable = false, unique = true)
+    // Nunca deve ser unique
+    @Column(nullable = false)
     private String category;
 
-    @Setter
-    @Getter
     @Column(nullable = false)
     private double price;
 
-    @Getter
-    @Setter
     @Column(nullable = false)
-    private int stock ;
+    private int stock;
 
-    @Getter
-    @Setter
     @Column(nullable = false)
     private int quantity;
 
-    @Getter
-    @Setter
-    @Version //Controlle de Concorrencia
-    private  Long version;
+    @Version // Controle de concorrência (otimista)
+    private Long version;
 
-    public  void decreaseStock(int quantity){
-        if(this.stock < quantity ){
-            throw  new RollbackException( "Estoque insuficiente");
+    // =========================
+    // REGRAS DE NEGÓCIO
+    // =========================
+
+    public void decreaseStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantidade inválida");
         }
+
+        if (this.stock < quantity) {
+            throw new RuntimeException("Estoque insuficiente");
+        }
+
+        this.stock -= quantity;
     }
 
-    public ProductEntity(String name, String description, String category, double price, int quantity, double unitPrice) {
+    public void increaseStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantidade inválida");
+        }
+
+        this.stock += quantity;
+    }
+
+    // =========================
+    // CONSTRUTORES
+    // =========================
+
+    public ProductEntity() {}
+
+    public ProductEntity(String name, String description, String category, double price, int stock) {
         this.name = name;
         this.description = description;
         this.category = category;
         this.price = price;
-        this.quantity = quantity;
-}
-
-    public ProductEntity() {
-
+        this.stock = stock;
+        this.quantity = 0;
     }
-
-
 }

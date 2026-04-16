@@ -21,7 +21,7 @@ public class CartController {
         this.cartMapper = cartMapper;
 
     }
-
+    @CrossOrigin ( origins= "http://locahost:8080")
     @PostMapping("/cart/add")
     public ResponseEntity<Void> addProduct(
             @RequestParam UUID productId,
@@ -50,11 +50,5 @@ public class CartController {
         return  ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{cartId}")
-    public ResponseEntity<CartResponse> getCart(
-            @PathVariable UUID cartId
-    ){
-        CartEntity cart = cartService.getCartById(cartId);
-        return ResponseEntity.ok(cartMapper.toResponse(cart));
-    }
+
 }

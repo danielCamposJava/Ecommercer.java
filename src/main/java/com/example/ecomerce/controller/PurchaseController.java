@@ -17,6 +17,7 @@ public class PurchaseController {
     private final PurchaseService purchaseService;
 
     //  Checkout (finaliza compra)
+    @CrossOrigin ( origins= "http://locahost:8080")
     @PostMapping("/{userId}/checkout")
     public ResponseEntity<String> checkout(@PathVariable UUID userId) {
 
