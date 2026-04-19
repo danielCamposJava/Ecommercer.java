@@ -49,15 +49,18 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // ROTAS PUBLICAS
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/users/**").permitAll()
                         .requestMatchers("/products/**").permitAll()
+
                         .requestMatchers(
                                 "/h2-console/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        //ROTAS PRIVADAS
                         .requestMatchers("/cart/**").authenticated()
                         .requestMatchers("/purchases/**").authenticated()
                         .anyRequest().authenticated()

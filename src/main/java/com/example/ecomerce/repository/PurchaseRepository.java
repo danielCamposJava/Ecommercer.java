@@ -9,6 +9,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface PurchaseRepository extends JpaRepository<PurchaseEntity, UUID> {
-
     List<PurchaseEntity> findByUser(UserEntity user);
 }

@@ -18,7 +18,7 @@ import java.util.UUID;
 @Transactional
 public class CartService {
 
-    // 1. Descomente e use o UserRepository para buscar a entidade completa
+    // Descomente e use o UserRepository para buscar a entidade completa
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;

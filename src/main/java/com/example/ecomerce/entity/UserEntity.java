@@ -1,6 +1,8 @@
 package com.example.ecomerce.entity;
 
 import com.example.ecomerce.Enum.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +18,8 @@ import java.util.UUID;
 @Table(name = "users")
 @Getter
 @Setter
+//  Remove lixo técnico do Hibernate e garante que o Jackson veja os métodos da interface
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserEntity implements UserDetails {
 
     @Id
@@ -29,6 +33,7 @@ public class UserEntity implements UserDetails {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore //  NUNCA mostre a senha no GET do carrinho por segurança
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -58,7 +63,6 @@ public class UserEntity implements UserDetails {
     public UserEntity(String name, String email, String password, Role role,
                       String phone, String address, String city,
                       String state, String country, String zip) {
-
         this.name = name;
         this.email = email;
         this.password = password;
@@ -71,17 +75,19 @@ public class UserEntity implements UserDetails {
         this.zip = zip;
     }
 
+    // O Jackson transformará getAuthorities() na chave "authorities" no JSON
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
+    // O Jackson transformará getUsername() na chave "username" no JSON
     @Override
     public String getUsername() {
         return email;
     }
 
-    // obrigatório do UserDetails
+    // Os métodos abaixo aparecerão como "enabled": true, etc.
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }

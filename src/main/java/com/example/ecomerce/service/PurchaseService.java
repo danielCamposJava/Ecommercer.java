@@ -4,6 +4,7 @@ import com.example.ecomerce.entity.*;
 import com.example.ecomerce.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,125 +20,70 @@ public class PurchaseService {
     private final ProductRepository productRepository;
     private final PurchaseRepository purchaseRepository;
 
-    //  Busca ou cria carrinho
-    public CartEntity getOrCreateCart(UserEntity user) {
-        return cartRepository.findByUser(user)
-                .orElseGet(() -> {
-                    CartEntity cart = new CartEntity();
-                    cart.setUser(user);
-                    return cartRepository.save(cart);
-                });
+    // ADICIONADO: Método auxiliar para pegar o usuário logado via JWT
+    private UserEntity getAuthenticatedUser() {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado no contexto de segurança"));
     }
 
-    //  Adicionar produto
-    public void addProductToCart(UUID userId, UUID productId, int quantity) {
-
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
-
-        UserEntity user = getUser(userId);
-        ProductEntity product = getProduct(productId);
-
-        validateStock(product, quantity);
-
-        CartEntity cart = getOrCreateCart(user);
-
-        //  usa o domínio corretamente
-        cart.addProduct(product, quantity);
-
-        cartRepository.save(cart);
-    }
-
-    //  Remover produto
-    public void removeProductFromCart(UUID userId, UUID productId) {
-
-        UserEntity user = getUser(userId);
-        CartEntity cart = getCart(user);
-
-        cart.removeProduct(productId);
-
-        cartRepository.save(cart);
-    }
-
-    //  Visualizar carrinho
-    public List<CartItemEntity> getCart(UUID userId) {
-
-        UserEntity user = getUser(userId);
-        CartEntity cart = getCart(user);
-
-        return cart.getItems();
-    }
-
-    //  Checkout
+    //  Checkout atualizado para usar o usuário logado
     public void checkout(UUID userId) {
-
-        UserEntity user = getUser(userId);
+        UserEntity user = getAuthenticatedUser();
         CartEntity cart = getCart(user);
 
         if (cart.getItems().isEmpty()) {
             throw new RuntimeException("Carrinho vazio");
         }
 
-        //  valida estoque novamente (CRÍTICO)
+        // Valida estoque e processa itens
         for (CartItemEntity item : cart.getItems()) {
-            validateStock(item.getProduct(), item.getQuantity());
-        }
+            ProductEntity product = item.getProduct();
 
-        //  cria histórico
-        for (CartItemEntity item : cart.getItems()) {
+            // Valida estoque (CRÍTICO)
+            if (product.getStock() < item.getQuantity()) {
+                throw new RuntimeException("Estoque insuficiente para o produto: " + product.getName());
+            }
 
+            // Cria o registro da compra
             PurchaseEntity purchase = new PurchaseEntity();
             purchase.setUser(user);
-            purchase.setProduct(item.getProduct()); // corrigido
+            purchase.setProduct(product);
             purchase.setQuantity(item.getQuantity());
+            purchase.setPrice(item.getPrice()); //  Salva o preço da época da compra
+            purchase.setPurchaseDate(java.time.LocalDateTime.now()); //  Adiciona data
 
             purchaseRepository.save(purchase);
 
-            //  baixa estoque (simples)
-            ProductEntity product = item.getProduct();
+            // Baixa estoque definitivo
             product.setStock(product.getStock() - item.getQuantity());
+            productRepository.save(product);
         }
 
-        //  limpa carrinho
-        cart.getItems().clear();
-
+        // Limpa carrinho usando o método clear que criamos na entidade
+        cart.clear();
         cartRepository.save(cart);
     }
 
-    // Métodos auxiliares
-
-    private UserEntity getUser(UUID userId) {
-        return userRepository.findById(userId)
+    // ADICIONADO: Buscar compras do usuário logado (Histórico)
+    public List<PurchaseEntity> getMyPurchases(UUID userId) {
+        // 1. Extrai o usuário logado do Token
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-    }
 
-    private ProductEntity getProduct(UUID productId) {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+        // 2. Busca no banco as compras DESTE usuário
+        return purchaseRepository.findByUser(user);
     }
-
+    // Métodos auxiliares permanecem
     private CartEntity getCart(UserEntity user) {
         return cartRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Carrinho não encontrado"));
     }
 
-    private void validateStock(ProductEntity product, int quantity) {
-        if (product.getStock() < quantity) {
-            throw new RuntimeException("Estoque insuficiente");
-        }
-    }
 
-    public List<PurchaseEntity> getPurchases(UUID userId) {
-
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        return purchaseRepository.findByUser(user);
-    }
-    }
-
-
-
+    // getOrCreateCart e outros métodos podem ser mantidos conforme sua necessidade
+}
 
 

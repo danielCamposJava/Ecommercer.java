@@ -29,6 +29,6 @@ public class PurchaseController {
     @GetMapping("/{userId}")
     public ResponseEntity<List<PurchaseEntity>> getPurchases(@PathVariable UUID userId) {
 
-        return ResponseEntity.ok(purchaseService.getPurchases(userId));
+        return ResponseEntity.ok(purchaseService.getMyPurchases(userId));
     }
 }

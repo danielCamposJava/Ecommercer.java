@@ -1,6 +1,7 @@
 package com.example.ecomerce.controller;
 
 import com.example.ecomerce.dto.request.CartRequest;
+import com.example.ecomerce.entity.CartEntity;
 import com.example.ecomerce.mapper.CartMapper;
 import com.example.ecomerce.service.CartService;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,12 @@ public class CartController {
     ) {
         cartService.updateProduct(cartId, productId, quantity);
         return ResponseEntity.ok().build();
+    }
+    @GetMapping("/my-cart")
+    public ResponseEntity<CartEntity> getMyCart() {
+        // O service vai identificar o usuário logado e trazer o carrinho
+        CartEntity cart = cartService.getMyCart();
+        return ResponseEntity.ok(cart);
     }
 
     @DeleteMapping("/{cartId}/items/{productId}")
