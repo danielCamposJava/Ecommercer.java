@@ -1,22 +1,27 @@
 package com.example.ecomerce.controller;
 
+import com.example.ecomerce.dto.request.LoginRequest;
+import com.example.ecomerce.dto.response.AuthResponse;
 import com.example.ecomerce.service.AuthService;
-import lombok.RequiredArgsConstructor;
-import org.hibernate.boot.jaxb.Origin;
+import lombok.RequiredArgsConstructor;;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.lang.model.util.Elements;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-
 public class AuthController {
 
     private final AuthService authService;
-    @CrossOrigin ( origins= "http://locahost:8080")
+
+    @CrossOrigin(origins = "http://localhost:8080") // Corrigido de 'locahost' para 'localhost'
     @PostMapping("/login")
-    public String login(@RequestParam String email, @RequestParam String password) {
-        return authService.login(email, password);
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+        // Agora passamos apenas UM argumento (o objeto request)
+        AuthResponse response = authService.login(request);
+
+        // Retornamos o objeto AuthResponse que contém o token
+        return ResponseEntity.ok(response);
     }
 }

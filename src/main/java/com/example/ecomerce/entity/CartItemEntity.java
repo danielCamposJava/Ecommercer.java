@@ -15,12 +15,10 @@ public class CartItemEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    // DONO DA RELAÇÃO
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cart_id", nullable = false)
     private CartEntity cart;
 
-    // RELAÇÃO COM PRODUTO
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private ProductEntity product;
@@ -28,55 +26,30 @@ public class CartItemEntity {
     @Column(nullable = false)
     private int quantity;
 
-    @Column(nullable = false)
+    @Column(nullable = false) // H2 não aceitará NULL aqui
     private BigDecimal price;
 
-    //  construtor protegido (JPA)
     protected CartItemEntity() {}
 
-    //  construtor correto (regra de negócio)
-    public CartItemEntity(ProductEntity product, int quantity, BigDecimal price) {
-
-        if (product == null) {
-            throw new IllegalArgumentException("Produto não pode ser nulo");
-        }
-
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
-
-        if (price == null) {
-            throw new IllegalArgumentException("Preço não pode ser nulo");
-        }
+    // CORREÇÃO: Este construtor agora atribui o preço corretamente
+    public CartItemEntity(ProductEntity product, int quantity, double price) {
+        if (product == null) throw new IllegalArgumentException("Produto nulo");
+        if (quantity <= 0) throw new IllegalArgumentException("Quantidade inválida");
 
         this.product = product;
         this.quantity = quantity;
-        this.price = price;
+        this.price = BigDecimal.valueOf(price); // Atribui o valor convertido
     }
 
-    public CartItemEntity(ProductEntity product, int quantity, double price) {
-    }
-
-    // controle interno (evita bagunça externa)
     void setCart(CartEntity cart) {
         this.cart = cart;
     }
 
     public void increaseQuantity(int amount) {
-
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
-
         this.quantity += amount;
     }
 
     public void updateQuantity(int quantity) {
-
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
-
         this.quantity = quantity;
     }
 

@@ -8,9 +8,7 @@ import com.example.ecomerce.repository.ProductRepository;
 import com.example.ecomerce.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -20,16 +18,12 @@ import java.util.UUID;
 @Transactional
 public class CartService {
 
-    private final UserRepository  userRepository;
+    // 1. Descomente e use o UserRepository para buscar a entidade completa
+    private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
 
-    // =========================
-    // PUBLIC METHODS
-    // =========================
-
     public void addProduct(UUID productId, int quantity) {
-
         validateQuantity(quantity);
 
         UserEntity user = getAuthenticatedUser();
@@ -39,12 +33,32 @@ public class CartService {
         validateStock(product, quantity);
 
         cart.addProduct(product, quantity);
-
         cartRepository.save(cart);
     }
 
-    public void updateProduct(UUID productId, UUID id, int quantity) {
+    private UserEntity getAuthenticatedUser() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Usuário não autenticado");
+        }
+
+        Object principal = authentication.getPrincipal();
+        String email;
+
+        // 2. Lógica robusta para extrair o email do principal
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            email = userDetails.getUsername();
+        } else {
+            email = principal.toString();
+        }
+
+        // 3. Busca a UserEntity real no banco para garantir que o Hibernate gerencie o objeto
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário inválido no contexto de segurança"));
+    }
+
+    public void updateProduct(UUID productId, UUID id, int quantity) {
         UserEntity user = getAuthenticatedUser();
         CartEntity cart = getOrCreateCart(user);
 
@@ -54,27 +68,20 @@ public class CartService {
         }
 
         cart.updateProductQuantity(productId, quantity);
-
         cartRepository.save(cart);
     }
 
     public void removeProduct(UUID productId, UUID id) {
-
         UserEntity user = getAuthenticatedUser();
         CartEntity cart = getOrCreateCart(user);
 
         cart.removeProduct(productId);
-
         cartRepository.save(cart);
     }
 
     public CartEntity getMyCart() {
         return getOrCreateCart(getAuthenticatedUser());
     }
-
-    // =========================
-    // PRIVATE METHODS
-    // =========================
 
     private CartEntity getOrCreateCart(UserEntity user) {
         return cartRepository.findByUser(user)
@@ -100,22 +107,5 @@ public class CartService {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantidade inválida");
         }
-    }
-
-    private UserEntity getAuthenticatedUser() {
-
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Usuário não autenticado");
-        }
-
-        Object principal = authentication.getPrincipal();
-
-        if (principal instanceof UserEntity user) {
-            return user;
-        }
-
-        throw new RuntimeException("Usuário inválido");
     }
 }

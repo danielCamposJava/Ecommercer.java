@@ -10,98 +10,82 @@ import java.util.*;
 @Entity
 @Table(name = "carts")
 @Getter
+@Setter
 public class CartEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    // 🔥 RELACIONAMENTO CORRETO
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
-    @Setter
     private UserEntity user;
 
-    @OneToMany(
-            mappedBy = "cart",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItemEntity> items = new ArrayList<>();
 
-    // evita alteração externa
-    public List<CartItemEntity> getItems() {
-        return Collections.unmodifiableList(items);
-    }
-
-    public Optional<CartItemEntity> findItemByProduct(UUID productId) {
-        return items.stream()
-                .filter(i -> i.getProduct().getId().equals(productId))
-                .findFirst();
-    }
-
     public void addProduct(ProductEntity product, int quantity) {
-
-        if (product == null) {
-            throw new IllegalArgumentException("Produto não pode ser nulo");
-        }
-
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
-
+        int stockAvailable = product.getStock();
         Optional<CartItemEntity> existingItem = findItemByProduct(product.getId());
 
         if (existingItem.isPresent()) {
+            int newTotal = existingItem.get().getQuantity() + quantity;
+            if (newTotal > stockAvailable) {
+                throw new RuntimeException("Estoque insuficiente. Disponível: " + stockAvailable);
+            }
             existingItem.get().increaseQuantity(quantity);
-            return;
+        } else {
+            if (quantity > stockAvailable) {
+                throw new RuntimeException("Estoque insuficiente. Disponível: " + stockAvailable);
+            }
+            CartItemEntity newItem = new CartItemEntity(product, quantity, product.getPrice());
+            newItem.setCart(this);
+            this.items.add(newItem);
         }
-
-        CartItemEntity newItem =
-                new CartItemEntity(product, quantity, product.getPrice());
-
-        addItem(newItem);
     }
 
-    private void addItem(CartItemEntity item) {
-        item.setCart(this);
-        items.add(item);
-    }
-
-    public BigDecimal getTotal() {
-        return items.stream()
-                .map(CartItemEntity::getTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
+    //  Adicionado: Permite alterar a quantidade diretamente
     public void updateProductQuantity(UUID productId, int quantity) {
-
-        if (quantity < 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
-
-        CartItemEntity item = findItemByProduct(productId)
-                .orElseThrow(() -> new RuntimeException("Produto não está no carrinho"));
+        if (quantity < 0) throw new IllegalArgumentException("Quantidade inválida");
 
         if (quantity == 0) {
             removeProduct(productId);
             return;
         }
 
+        CartItemEntity item = findItemByProduct(productId)
+                .orElseThrow(() -> new RuntimeException("Produto não está no carrinho"));
+
+        if (quantity > item.getProduct().getStock()) {
+            throw new RuntimeException("Estoque insuficiente.");
+        }
+
         item.updateQuantity(quantity);
     }
 
+    //  Corrigido: Remove o item e desvincula do Hibernate
     public void removeProduct(UUID productId) {
-
         CartItemEntity item = findItemByProduct(productId)
-                .orElseThrow(() -> new RuntimeException("Produto não está no carrinho"));
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado no carrinho"));
 
         items.remove(item);
         item.setCart(null);
     }
 
-    @Override
-    public String toString() {
-        return "CartEntity{id=" + id + "}";
+    // 🔥 Adicionado: Útil para limpar o carrinho após finalizar a compra
+    public void clear() {
+        items.clear();
+    }
+
+    private Optional<CartItemEntity> findItemByProduct(UUID productId) {
+        return items.stream()
+                .filter(item -> item.getProduct().getId().equals(productId))
+                .findFirst();
+    }
+
+    public BigDecimal getTotal() {
+        return items.stream()
+                .map(CartItemEntity::getTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

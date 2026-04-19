@@ -24,47 +24,48 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     public ProductResponse addProduct(@Valid ProductRequest request) {
-
         ProductEntity entity = new ProductEntity();
-        //entity.setId(UUID.randomUUID());
+
+        // Copiando os dados do DTO para a Entidade
         entity.setName(request.name());
         entity.setDescription(request.description());
         entity.setCategory(request.category());
-        entity.setPrice(Double.parseDouble(request.price()));
+
+        // gora não precisa de Double.parseDouble() porque o DTO já traz números
+        entity.setPrice(request.price());
+        entity.setStock(request.stock());      // Salvando o estoque!
+        entity.setQuantity(request.quantity()); // Salvando a quantidade inicial!
 
         ProductEntity saved = productRepository.save(entity);
-
         return ProductResponse.of(saved);
     }
 
-
-
-   public List<ProductResponse>getAllProduct(){
+    public List<ProductResponse> getAllProduct() {
         return productRepository.findAll()
-                .stream().map( ProductResponse ::of).toList();
+                .stream()
+                .map(ProductResponse::of)
+                .toList();
     }
 
-
     public ProductResponse updateProduct(UUID id, @Valid ProductRequest request) {
-
         ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("product not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
 
         entity.setName(request.name());
         entity.setDescription(request.description());
         entity.setCategory(request.category());
-        entity.setPrice(Double.parseDouble(request.price()));
+        entity.setPrice(request.price());
+        entity.setStock(request.stock());      // Atualizando o estoque também
+        entity.setQuantity(request.quantity());
 
         ProductEntity saved = productRepository.save(entity);
-
         return ProductResponse.of(saved);
     }
 
     public void deleteProduct(UUID id) {
         if (!productRepository.existsById(id)) {
-            throw new IllegalArgumentException("product not found");
+            throw new IllegalArgumentException("Produto não encontrado");
         }
-
         productRepository.deleteById(id);
     }
 }
