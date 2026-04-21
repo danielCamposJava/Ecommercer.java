@@ -22,7 +22,7 @@ public class CartEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    // REMOVIDO @JsonIgnore: Agora o User aparece no JSON como "pai"
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private UserEntity user;

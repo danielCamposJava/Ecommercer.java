@@ -23,7 +23,7 @@ public class ProductEntity {
     // Nunca deve ser unique
     @Column(nullable = false, length = 500)
     private String description;
-
+    
     // Nunca deve ser unique
     @Column(nullable = false)
     private String category;

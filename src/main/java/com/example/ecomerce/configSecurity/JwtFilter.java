@@ -22,7 +22,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
-    // 2. Mude de 'UserDetails' para 'UserDetailsService'
+    //  Mude de 'UserDetails' para 'UserDetailsService'
     // É o SERVIÇO que precisamos aqui para buscar o usuário no banco
     private final UserDetailsService userDetailsService;
 

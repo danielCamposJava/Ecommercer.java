@@ -32,6 +32,7 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
 
     // O Spring buscará estes dois Beans lá na sua classe AppConfig
+
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     @Bean
@@ -40,6 +41,7 @@ public class SecurityConfig {
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http

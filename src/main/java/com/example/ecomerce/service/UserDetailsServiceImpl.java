@@ -18,11 +18,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // 1. Busca o usuário no banco usando o método que você criou
+        //  Busca o usuário no banco usando o método que você criou
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
 
-        // 2. Converte sua UserEntity para o UserDetails do Spring Security
+        //  Converte sua UserEntity para o UserDetails do Spring Security
         // Nota: Se sua UserEntity já implementar UserDetails, você pode retornar 'user' direto.
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())

@@ -8,9 +8,7 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<UserEntity, UUID> {
 
-    //  buscar por email (ESSENCIAL pra login)
     Optional<UserEntity> findByEmail(String email);
 
-    //  verificar se email já existe (evita duplicado)
     boolean existsByEmail(String email);
 }

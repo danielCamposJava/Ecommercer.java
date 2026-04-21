@@ -2,21 +2,10 @@ package com.example.ecomerce.service;
 
 import com.example.ecomerce.dto.request.LoginRequest;
 import com.example.ecomerce.dto.response.AuthResponse;
-import com.example.ecomerce.entity.UserEntity;
-import com.example.ecomerce.repository.UserRepository;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.security.Key;
-import java.util.Date;
-
-import static javax.crypto.Cipher.SECRET_KEY;
 
 @Service
 @RequiredArgsConstructor

@@ -20,7 +20,7 @@ public class CartItemEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cart_id", nullable = false)
-    @JsonBackReference // 🔥 ESSENCIAL: Impede que o item chame o carrinho de volta (evita o loop)
+    @JsonBackReference // ESSENCIAL: Impede que o item chame o carrinho de volta (evita o loop)
     private CartEntity cart;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
