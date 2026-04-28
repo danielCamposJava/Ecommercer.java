@@ -2,6 +2,7 @@ import 'dart:nativewrappers/_internal/vm/lib/math_patch.dart';
 
 import 'package:flutter/material.dart';
 import 'package:meu_app/model/product.dart';
+import 'package:meu_app/productdetails/product_detail_page.dart';
 import 'package:meu_app/services/product_service.dart';
 import '../../model/product.dart';
 import '../../services/product_service.dart';

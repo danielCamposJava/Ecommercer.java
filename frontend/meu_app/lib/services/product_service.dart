@@ -5,7 +5,7 @@ import '../model/product.dart';
 
 class ProductService {
   Future<List<Product>> fetchProducts() async {
-    final response = await http.get(Uri.parse("http://10.0.2.2:8080/products"));
+    final response = await http.get(Uri.parse("http://10.0.2.2:8080/getProducts"));
 
     if (response.statusCode == 200) {
       List data = jsonDecode(response.body);
